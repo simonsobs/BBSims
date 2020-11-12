@@ -12,6 +12,6 @@ setup(name = 'LB_mbs',
       zip_safe = False,
       entry_points = {
         'console_scripts': [
-            'litebird_mbs = lb_mbs.pipeline:__main__'
+            'so_bb_mapsims = lb_mbs.pipeline:__main__'
         ]
       })
