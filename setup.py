@@ -1,17 +1,17 @@
 from setuptools import setup
 
-setup(name = 'LB_mbs',
+setup(name = 'sobb_mapsims',
       version = '0.1',
       description = '',
       url = '',
       author = 'Nicoletta Krachmalnicoff',
       author_email = 'nkrach@sissa.it',
       license = 'MIT',
-      packages = ['lb_mbs'],
-      package_dir = {'lb_mbs': 'lb_mbs'},
+      packages = ['sobb_mapsims'],
+      package_dir = {'sobb_mapsims': 'sobb_mapsims'},
       zip_safe = False,
       entry_points = {
         'console_scripts': [
-            'so_bb_mapsims = lb_mbs.pipeline:__main__'
+            'sobb_mapsims = sobb_mapsims.pipeline:__main__'
         ]
       })
