@@ -2,7 +2,7 @@
 parallel = True
 
 #define LiteBIRD instrument
-inst = 'LB_IMOv1'
+inst = 'SAT'
 
 #output maps parameters
 nside = 512
@@ -35,4 +35,4 @@ fg_models = {
 
 #output options
 out_dir = './'
-file_string = 'PTEP_20200915_compsep'
+file_string = 'test'
