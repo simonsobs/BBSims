@@ -5,9 +5,10 @@ import pysm3.units as u
 import argparse
 import importlib.util
 import os
-import sobb_mapsims.instrument
 from sobb_mapsims.utils import *
 import toml
+import sobb_mapsims.V3_calc_public as sonc
+
 
 def fg_pawlaw(A, alpha, l0=80., lmax=512*3., return_cl=True):
     ell = np.arange(lmax-1)
@@ -71,7 +72,6 @@ def make_fg_sims(params):
 
     """
     parallel = params.parallel
-    instr = getattr(sobb_mapsims.instrument, params.inst)
     nside = params.nside
     smooth = params.gaussian_smooth
     root_dir = params.out_dir
@@ -80,8 +80,11 @@ def make_fg_sims(params):
         root_dir = root_dir.replace('.', pwd)
     out_dir = f'{root_dir}/foregrounds/'
     file_str = params.file_string
-    channels = instr.keys()
+    ch_name = ['SO_SAT_27', 'SO_SAT_39', 'SO_SAT_93', 'SO_SAT_145', 'SO_SAT_225', 'SO_SAT_280']
+    freqs = sonc.Simons_Observatory_V3_SA_bands()
+    beams = sonc.Simons_Observatory_V3_SA_beams()
     gaussian_fg = params.gaussian_fg
+    band_int = params.band_int
     nmc_fg = params.nmc_fg
     seed_fg = params.seed_fg
     if not nmc_fg:
@@ -121,7 +124,6 @@ def make_fg_sims(params):
                 nmc_str = str(nmc).zfill(4)
                 if seed_fg:
                     seed_fg_mc = seed_fg+nmc+ncp*1002
-                    print(cmp, nmc, seed_fg_mc)
                 if nmc_fg:
                     if not os.path.exists(out_dir+cmp+'/'+nmc_str):
                         os.makedirs(out_dir+cmp+'/'+nmc_str)
@@ -143,21 +145,22 @@ def make_fg_sims(params):
                     write_gaussian_config_file(cmp, file_path_Q, file_path_U, fg_config_file_name)
                     fg_config_file = fg_config_file_name
             sky = pysm3.Sky(nside=nside, component_config=fg_config_file)
-            for chnl in channels:
-                freq = instr[chnl]['freq']
-                fwhm = instr[chnl]['beam']
-                if params.band_int:
-                    band = instr[chnl]['freq_band']
-                    fmin = freq-band/2.
-                    fmax = freq+band/2.
-                    fsteps = fmax-fmin+1
-                    bandpass_frequencies = np.linspace(fmin, fmax, fsteps) * u.GHz
-                    weights = np.ones(len(bandpass_frequencies))
+            for nch, chnl in enumerate(ch_name):
+                freq = freqs[nch]
+                fwhm = beams[nch]
+                if band_int:
+                    band_file_name = os.path.join(
+                        os.path.dirname(__file__),
+                        f'datautils/bandpasses/band_{chnl}.txt')
+                    bandpass_frequencies, weights = np.loadtxt(band_file_name, unpack=True)
+                    bandpass_frequencies = bandpass_frequencies * u.GHz
                     sky_extrap = sky.get_emission(bandpass_frequencies, weights)
                     sky_extrap = sky_extrap*bandpass_unit_conversion(bandpass_frequencies, weights, u.uK_CMB)
                 else:
                     sky_extrap = sky.get_emission(freq*u.GHz)
                     sky_extrap = sky_extrap.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(freq*u.GHz))
+                if not gaussian_fg:
+                    sky_extrap = pysm3.apply_smoothing_and_coord_transform(sky_extrap, rot=hp.Rotator(coord=("G", "C")))
                 if smooth:
                     sky_extrap_smt = hp.smoothing(sky_extrap, fwhm = np.radians(fwhm/60.), verbose=False)
                 else:

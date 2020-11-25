@@ -4,10 +4,11 @@ import argparse
 import importlib.util
 import os
 import math
-import lb_mbs.instrument
 import pysm3
 import pysm3.units as u
-from lb_mbs.utils import *
+from sobb_mapsims.utils import *
+import sobb_mapsims.V3_calc_public as sonc
+
 
 def make_cmb_sims(params):
     """ Write cmb maps on disk
@@ -17,15 +18,17 @@ def make_cmb_sims(params):
     params: module contating all the simulation parameters
 
     """
-    instr = getattr(lb_mbs.instrument, params.inst)
     nmc_cmb = params.nmc_cmb
     nside = params.nside
     smooth = params.gaussian_smooth
+    ch_name = ['SO_SAT_27', 'SO_SAT_39', 'SO_SAT_93', 'SO_SAT_145', 'SO_SAT_225', 'SO_SAT_280']
+    freqs = sonc.Simons_Observatory_V3_SA_bands()
+    beams = sonc.Simons_Observatory_V3_SA_beams()
+    band_int = params.band_int
     parallel = params.parallel
     root_dir = params.out_dir
     out_dir = f'{root_dir}/cmb/'
     file_str = params.file_string
-    channels = instr.keys()
     seed_cmb = params.seed_cmb
     cmb_ps_file = params.cmb_ps_file
     rank = 0
@@ -43,11 +46,11 @@ def make_cmb_sims(params):
     else:
         cmb_ps_scalar_file = os.path.join(
             os.path.dirname(__file__),
-            'datautils/Cls_Planck2018_for_PTEP_2020_r0.fits')
+            'datautils/Cls_Planck2018_r0.fits')
         cl_cmb_scalar = hp.read_cl(cmb_ps_scalar_file)
         cmb_ps_tensor_r1_file = os.path.join(
             os.path.dirname(__file__),
-            'datautils/Cls_Planck2018_for_PTEP_2020_tensor_r1.fits')
+            'datautils/Cls_Planck2018_tensor_r1.fits')
         cmb_r = params.cmb_r
         cl_cmb_tensor = hp.read_cl(cmb_ps_tensor_r1_file)*cmb_r
         cl_cmb = cl_cmb_scalar+cl_cmb_tensor
@@ -67,21 +70,11 @@ def make_cmb_sims(params):
         hp.write_map(file_tot_path, cmb_temp, overwrite=True, dtype=np.float32)
         os.environ["PYSM_LOCAL_DATA"] = f'{out_dir}'
         sky = pysm3.Sky(nside=nside, component_objects=[pysm3.CMBMap(nside, map_IQU=f'{nmc_str}/{file_name}')])
-        for chnl in channels:
-            freq = instr[chnl]['freq']
-            if params.band_int:
-                band = instr[chnl]['freq_band']
-                fmin = freq-band/2.
-                fmax = freq+band/2.
-                fsteps = fmax-fmin+1
-                bandpass_frequencies = np.linspace(fmin, fmax, fsteps) * u.GHz
-                weights = np.ones(len(bandpass_frequencies))
-                cmb_map = sky.get_emission(bandpass_frequencies, weights)
-                cmb_map = cmb_map*bandpass_unit_conversion(bandpass_frequencies, weights, u.uK_CMB)
-            else:
-                cmb_map = sky.get_emission(freq*u.GHz)
-                cmb_map = cmb_map.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(freq*u.GHz))
-            fwhm = instr[chnl]['beam']
+        for nch, chnl in enumerate(ch_name):
+            freq = freqs[nch]
+            fwhm = beams[nch]
+            cmb_map = sky.get_emission(freq*u.GHz)
+            cmb_map = cmb_map.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(freq*u.GHz))
             if smooth:
                 cmb_map_smt = hp.smoothing(cmb_map, fwhm = np.radians(fwhm/60.), verbose=False)
             else:

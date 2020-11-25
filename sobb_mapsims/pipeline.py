@@ -49,10 +49,6 @@ def check_and_fix_config_file(params):
         from mpi4py import MPI
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
-    try: params.inst
-    except:
-        params.inst = 'latest'
-        print_rnk0('WARNING: no instrument defined, using the LB latest one', rank)
     assert params.nside
     try: params.gaussian_smooth
     except:
@@ -77,8 +73,27 @@ def check_and_fix_config_file(params):
         try:
             params.N_split
             if params.N_split==1:
-                params.N_split = None
+                params.N_split = False
         except: params.N_split = False
+        try: params.sensitivity_mode
+        except:
+            params.sensitivity_mode = 1
+            print_rnk0('WARNING: setting setting sensitivity_mode to baseline (1)', rank)
+        try: params.one_over_f
+        except:
+            params.one_over_f = 1
+            print_rnk0('WARNING: setting one_over_f noise to optimistic (one_over_f=1)', rank)
+        if params.one_over_f==False:
+            params.one_over_f=-1
+        try: params.use_hits
+        except:
+            params.use_hits = True
+            print_rnk0('WARNING: using hits map to generate noise', rank)
+        if params.use_hits==False:
+            try: params.f_sky
+            except:
+                params.f_sky = 'default'
+                print_rnk0('WARNING: using effective f_sky from the normalized hits map', rank)
     try: params.make_cmb
     except:
         params.make_cmb = False
@@ -260,7 +275,7 @@ def __main__():
         sobb_mapsims.foregrounds.make_fg_sims(params)
     if rank==0:
         #write_summary(params, par_file)
-        write_inst_file(params)
+        #write_inst_file(params)
         if params.save_coadd:
             print_rnk0('saving coadded signal maps', rank)
             coadd_signal_maps(params)
