@@ -1,5 +1,5 @@
 # LB_mbs
-Library for producing map based simulations for the LiteBIRD experiment
+Library for producing map based simulations for the Simons Observatory BB-AWG
 
 ## Requirments
 
@@ -20,5 +20,5 @@ git clone https://github.com/NicolettaK/SObb_mapsims.git
 to run:
 
 ```
-sobb_mapsims --par_file=config.py
+sobb_mapsims --par_file config.py
 ```
