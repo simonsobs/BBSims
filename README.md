@@ -12,7 +12,7 @@ Library for producing map based simulations for the Simons Observatory BB-AWG
 The code is under development therefore to install it just use:
 
 ```bash
-git clone https://github.com/NicolettaK/SObb_mapsims.git
+git clone https://github.com/NicolettaK/BBSims.git
 [sudo] python setup.py develop [--user]
 ```
 
@@ -20,5 +20,5 @@ git clone https://github.com/NicolettaK/SObb_mapsims.git
 to run:
 
 ```
-sobb_mapsims --par_file config.py
+so_bbsims --par_file config.py
 ```
