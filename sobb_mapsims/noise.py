@@ -4,7 +4,6 @@ import argparse
 import importlib.util
 import os
 import math
-import sobb_mapsims.instrument
 from sobb_mapsims.utils import *
 import sobb_mapsims.V3_calc_public as sonc
 

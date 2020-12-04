@@ -5,7 +5,6 @@ import importlib.util
 import sobb_mapsims.noise
 import sobb_mapsims.cmb
 import sobb_mapsims.foregrounds
-import sobb_mapsims.instrument
 from sobb_mapsims.utils import *
 from datetime import date, datetime
 import os
