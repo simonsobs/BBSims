@@ -5,9 +5,9 @@ import pysm3.units as u
 import argparse
 import importlib.util
 import os
-from sobb_mapsims.utils import *
+from bbsims.utils import *
 import toml
-import sobb_mapsims.V3_calc_public as sonc
+import bbsims.V3_calc_public as sonc
 
 
 def fg_pawlaw(A, alpha, l0=80., lmax=512*3., return_cl=True):

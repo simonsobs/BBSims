@@ -2,10 +2,10 @@ import healpy as hp
 import numpy as np
 import argparse
 import importlib.util
-import sobb_mapsims.noise
-import sobb_mapsims.cmb
-import sobb_mapsims.foregrounds
-from sobb_mapsims.utils import *
+import bbsims.noise
+import bbsims.cmb
+import bbsims.foregrounds
+from bbsims.utils import *
 from datetime import date, datetime
 import os
 
@@ -155,7 +155,7 @@ def coadd_signal_maps(params):
     cmb_dir = f'{root_dir}/cmb/'
     nside = params.nside
     file_str = params.file_string
-    instr = getattr(sobb_mapsims.instrument, params.inst)
+    instr = getattr(bbsims.instrument, params.inst)
     channels = instr.keys()
     coadd_dir = f'{root_dir}/coadd_signal_maps/'
     if not os.path.exists(coadd_dir):
@@ -241,7 +241,7 @@ def write_summary(params, par_file):
     f.close()
 
 def write_inst_file(params):
-    instr = getattr(sobb_mapsims.instrument, params.inst)
+    instr = getattr(bbsims.instrument, params.inst)
     instr_file = f'instrument_{params.inst}.npy'
     if params.gaussian_smooth==False:
         for k in instr:
@@ -252,7 +252,7 @@ def write_inst_file(params):
     np.save(instr_file, instr)
 
 def __main__():
-    """ Run the sobb_mapsims pipeline
+    """ Run the bbsims pipeline
 
     """
 
@@ -265,13 +265,13 @@ def __main__():
         rank = comm.Get_rank()
     if params.make_noise:
         print_rnk0('generating noise simulations', rank)
-        sobb_mapsims.noise.make_noise_sims(params)
+        bbsims.noise.make_noise_sims(params)
     if params.make_cmb:
         print_rnk0('generating cmb simulations', rank)
-        sobb_mapsims.cmb.make_cmb_sims(params)
+        bbsims.cmb.make_cmb_sims(params)
     if params.make_fg:
         print_rnk0('generating fg simulations', rank)
-        sobb_mapsims.foregrounds.make_fg_sims(params)
+        bbsims.foregrounds.make_fg_sims(params)
     if rank==0:
         #write_summary(params, par_file)
         #write_inst_file(params)

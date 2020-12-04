@@ -6,8 +6,8 @@ import os
 import math
 import pysm3
 import pysm3.units as u
-from sobb_mapsims.utils import *
-import sobb_mapsims.V3_calc_public as sonc
+from bbsims.utils import *
+import bbsims.V3_calc_public as sonc
 
 
 def make_cmb_sims(params):

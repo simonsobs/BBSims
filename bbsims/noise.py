@@ -4,8 +4,8 @@ import argparse
 import importlib.util
 import os
 import math
-from sobb_mapsims.utils import *
-import sobb_mapsims.V3_calc_public as sonc
+from bbsims.utils import *
+import bbsims.V3_calc_public as sonc
 
 def make_noise_sims(params):
     """ Write noise maps on disk
