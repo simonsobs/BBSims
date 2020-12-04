@@ -1,4 +1,4 @@
-# SObb_mapsims
+# BBSims
 Library for producing map based simulations for the Simons Observatory BB-AWG
 
 ## Requirments
