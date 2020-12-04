@@ -129,11 +129,13 @@ def make_fg_sims(params):
                         os.makedirs(out_dir+cmp+'/'+nmc_str)
                     write_dir = out_dir+cmp+'/'+nmc_str
                     if cmp=='dust':
-                        A_EE_BB=[56., 28]
-                        alpha_EE_BB=[-0.32, -0.16]
+                        Kcmb_to_Krj = (1. * u.uK_CMB).to_value(u.uK_RJ, equivalencies=u.cmb_equivalencies(353. * u.GHz))
+                        A_EE_BB = np.array([56., 28.])*Kcmb_to_Krj**2.
+                        alpha_EE_BB = np.array([-0.32, -0.16])
                     if cmp=='synch':
-                        A_EE_BB=[9., 1.6]
-                        alpha_EE_BB=[-0.7, -0.93]
+                        Kcmb_to_Krj = (1. * u.uK_CMB).to_value(u.uK_RJ, equivalencies=u.cmb_equivalencies(23. * u.GHz))
+                        A_EE_BB = np.array([9., 1.6])*Kcmb_to_Krj**2.
+                        alpha_EE_BB = np.array([-0.7, -0.93])
                     fg_temp = make_gaussian_fg(A_EE_BB, alpha_EE_BB, Nside=nside, seed=seed_fg_mc)
                     file_name_Q = f'{cmp}_{nmc_str}_{file_str}_Q.fits'
                     file_name_U = f'{cmp}_{nmc_str}_{file_str}_U.fits'
