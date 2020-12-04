@@ -98,7 +98,7 @@ def make_fg_sims(params):
         from mpi4py import MPI
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
-        rank_to_use = list(range(ncomp))
+        size = comm.Get_size()
     if not os.path.exists(out_dir) and rank==0:
         os.makedirs(out_dir)
     if gaussian_fg and nmc_fg:
