@@ -5,7 +5,7 @@ parallel = False
 nside = 256
 gaussian_smooth = False
 band_int = True
-save_coadd = False
+#save_coadd = False
 
 #noise configuration
 make_noise = True
@@ -19,7 +19,7 @@ N_split = False
 
 # #cmb configuration
 make_cmb = True
-#cmb_ps_file = 'Cls_Planck2018_for_PTEP_2020_r0.fits'
+#cmb_ps_file = ''
 cmb_r = 0
 nmc_cmb = 2
 seed_cmb = 38198
