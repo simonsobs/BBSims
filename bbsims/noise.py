@@ -44,7 +44,7 @@ def make_noise_sims(params):
         print_rnk0(f'WARNING: setting nmc_noise = {nmc_noise}', rank)
     perrank = nmc_noise//size
     chnl_seed = 12
-    if (use_hits==True) or (f_sky=='default'):
+    if (use_hits==True) or (f_sky==False):
         hits_file = os.path.join(
             os.path.dirname(__file__),
             'datautils/norm_nHits_SA_35FOV_nside512.fits')
@@ -63,6 +63,8 @@ def make_noise_sims(params):
         f_sky = np.mean(mask_binary)
     ell, n_ell = sonc.Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f,2,f_sky,nside*3,1)
     for nch, chnl in enumerate(ch_name):
+            np.savez(f'{out_dir}/{chnl}_ell_n_ell_FULL_{file_str}.npz', ell=ell, n_ell=n_ell[nch])
+            hp.write_map(f'{out_dir}/binary_mask.fits', mask_binary, overwrite=True, dtype=np.float32)
             chnl_seed += 67
             n_ell_ch_P = n_ell[nch]
             n_ell_ch_T = n_ell_ch_P/2.
@@ -85,13 +87,11 @@ def make_noise_sims(params):
                         file_name = f'{chnl}_noise_SPLIT_{hm+1}of{N_split}_{nmc_str}_{file_str}.fits'
                         file_tot_path = f'{out_dir}{nmc_str}/{file_name}'
                         noise_map_split[np.where(np.abs(noise_map_split)==float("inf"))] = 0
-                        hp.write_map(file_tot_path, noise_map_split, overwrite=True)
+                        hp.write_map(file_tot_path, noise_map_split, overwrite=True, dtype=np.float32)
                 else:
                     noise_map = hp.synfast(n_ell_ch, nside, pol=True,new=True,verbose=False)
                     if use_hits:
                         noise_map /= np.sqrt(hits_map/np.amax(hits_map))
-                    else:
-                        noise_map = noise_map*mask_binary
                 noise_map[np.where(np.abs(noise_map)==float("inf"))] = 0
                 file_name = f'{chnl}_noise_FULL_{nmc_str}_{file_str}.fits'
                 file_tot_path = f'{out_dir}{nmc_str}/{file_name}'

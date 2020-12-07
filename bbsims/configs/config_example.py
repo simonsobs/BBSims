@@ -9,8 +9,8 @@ band_int = True
 
 #noise configuration
 make_noise = True
-one_over_f = False
-sensitivity_mode = 1
+sensitivity_mode = -1
+one_over_f = 1
 use_hits = False
 #f_sky = 0.1
 nmc_noise = 2

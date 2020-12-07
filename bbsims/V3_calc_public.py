@@ -25,6 +25,7 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
     ## retuns noise curves, including the impact of the beam for the SO small aperture telescopes
     ## noise curves are polarization only
     # sensitivity_mode
+    #     -1: no white noise
     #     0: threshold,
     #     1: baseline,
     #     2: goal
@@ -41,13 +42,19 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
     ###                        Internal variables
     ## SMALL APERTURE
     # ensure valid parameter choices
-    assert( sensitivity_mode == 0 or sensitivity_mode == 1 or sensitivity_mode == 2)
+    assert( sensitivity_mode == 0 or sensitivity_mode == 1 or sensitivity_mode == 2 or sensitivity_mode == -1)
     assert( one_over_f_mode == 0 or one_over_f_mode == 1 or one_over_f_mode == -1)
     assert( SAC_yrs_LF <= 5) #N.B. SAC_yrs_LF can be negative
     assert( f_sky > 0. and f_sky <= 1.)
     assert( ell_max <= 2e4 )
     assert( delta_ell >= 1 )
     # configuration
+    if sensitivity_mode == -1:
+        sensitivity_mode = 1
+        no_white_component = True
+    else:
+        no_white_component = False
+
     if (SAC_yrs_LF > 0):
         NTubes_LF  = SAC_yrs_LF/5. + 1e-6  ## regularized in case zero years is called
         NTubes_MF  = 2 - SAC_yrs_LF/5.
@@ -80,7 +87,7 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
     ## calculate the survey area and time
     t = 5* 365. * 24. * 3600    ## five years in seconds
     t = t * 0.2  ## retention after observing efficiency and cuts
-    t = t* 0.85  ## a kluge for the noise non-uniformity of the map edges
+    #t = t* 0.85  ## a kluge for the noise non-uniformity of the map edges
     A_SR = 4 * np.pi * f_sky  ## sky areas in Steradians
     A_deg =  A_SR * (180/np.pi)**2  ## sky area in square degrees
     A_arcmin = A_deg * 3600.
@@ -90,11 +97,12 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
 
     ####################################################################
     ## make the ell array for the output noise curves
-    ell = np.arange(2,ell_max,delta_ell)
+    ell = np.arange(0, ell_max, delta_ell)
 
     ####################################################################
     ###   CALCULATE N(ell) for Temperature
     ## calculate the experimental weight
+    print('sensitivity_mode', sensitivity_mode)
     W_T_27  = S_SA_27[sensitivity_mode]  / np.sqrt(t)
     W_T_39  = S_SA_39[sensitivity_mode]  / np.sqrt(t)
     W_T_93  = S_SA_93[sensitivity_mode]  / np.sqrt(t)
@@ -115,7 +123,15 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
     ####################################################################
     ###   CALCULATE N(ell) for Polarization
     ## calculate the atmospheric contribution for P
-    if one_over_f_mode==-1:
+    if no_white_component:
+        AN_P_27  = (ell)**alpha_pol[0]
+        AN_P_39  = (ell)**alpha_pol[1]
+        AN_P_93  = (ell)**alpha_pol[2]
+        AN_P_145 = (ell)**alpha_pol[3]
+        AN_P_225 = (ell)**alpha_pol[4]
+        AN_P_280 = (ell)**alpha_pol[5]
+
+    elif one_over_f_mode==-1:
         AN_P_27  = np.ones(len(ell))
         AN_P_39  = np.ones(len(ell))
         AN_P_93  = np.ones(len(ell))
@@ -123,8 +139,6 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
         AN_P_225 = np.ones(len(ell))
         AN_P_280 = np.ones(len(ell))
     else:
-        print(one_over_f_mode)
-        print(len(ell), one_over_f_mode)
         AN_P_27  = (ell / f_knee_pol_SA_27[one_over_f_mode] )**alpha_pol[0] + 1.
         AN_P_39  = (ell / f_knee_pol_SA_39[one_over_f_mode] )**alpha_pol[1] + 1.
         AN_P_93  = (ell / f_knee_pol_SA_93[one_over_f_mode] )**alpha_pol[2] + 1.
@@ -143,6 +157,6 @@ def Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f_mode,SAC_yrs_LF,f
 
     ## make an array of noise curves for P
     N_ell_P_SA = np.array([N_ell_P_27,N_ell_P_39,N_ell_P_93,N_ell_P_145,N_ell_P_225,N_ell_P_280])
-
+    N_ell_P_SA[:, 0:2] = 0
     ####################################################################
-    return(ell,N_ell_P_SA)
+    return(ell, N_ell_P_SA)

@@ -78,6 +78,9 @@ def check_and_fix_config_file(params):
         except:
             params.sensitivity_mode = 1
             print_rnk0('WARNING: setting setting sensitivity_mode to baseline (1)', rank)
+        if params.sensitivity_mode==-1:
+            params.use_hits = False
+            params.f_sky = False
         try: params.one_over_f
         except:
             params.one_over_f = 1
@@ -91,7 +94,7 @@ def check_and_fix_config_file(params):
         if params.use_hits==False:
             try: params.f_sky
             except:
-                params.f_sky = 'default'
+                params.f_sky = False
                 print_rnk0('WARNING: using effective f_sky from the normalized hits map', rank)
     try: params.make_cmb
     except:
