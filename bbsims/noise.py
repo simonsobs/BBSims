@@ -55,7 +55,7 @@ def make_noise_sims(params):
         hits_map_sort = np.copy(hits_map)
         hits_map_sort = np.sort(hits_map_sort)
         hits_map_sort = hits_map_sort[::-1]
-        el_thrs = round(len(hits_map_sort)*f_sky)
+        el_thrs = int(round(len(hits_map_sort)*f_sky))
         min_hits = hits_map_sort[el_thrs]
         mask_binary = np.copy(hits_map)
         mask_binary[hits_map<min_hits] = 0
