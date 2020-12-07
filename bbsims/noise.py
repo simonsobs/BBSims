@@ -47,7 +47,7 @@ def make_noise_sims(params):
     if (use_hits==True) or (f_sky==False):
         hits_file = os.path.join(
             os.path.dirname(__file__),
-            'datautils/norm_nHits_SA_35FOV_nside512.fits')
+            'datautils/apodized_SAThits_SOpaper2018_nside1024.fits')
         hits_map = hp.read_map(hits_file)
         hits_map = hp.ud_grade(hits_map, nside)
         f_sky = np.mean(hits_map)
