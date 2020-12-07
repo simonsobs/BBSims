@@ -63,8 +63,9 @@ def make_noise_sims(params):
         f_sky = np.mean(mask_binary)
     ell, n_ell = sonc.Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f,2,f_sky,nside*3,1)
     for nch, chnl in enumerate(ch_name):
-            np.savez(f'{out_dir}/{chnl}_ell_n_ell_FULL_{file_str}.npz', ell=ell, n_ell=n_ell[nch])
-            hp.write_map(f'{out_dir}/binary_mask.fits', mask_binary, overwrite=True, dtype=np.float32)
+            if rank==0:
+                np.savez(f'{out_dir}/{chnl}_ell_n_ell_FULL_{file_str}.npz', ell=ell, n_ell=n_ell[nch])
+                hp.write_map(f'{out_dir}/binary_mask.fits', mask_binary, overwrite=True, dtype=np.float32)
             chnl_seed += 67
             n_ell_ch_P = n_ell[nch]
             n_ell_ch_T = n_ell_ch_P/2.
