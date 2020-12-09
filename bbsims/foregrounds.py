@@ -31,7 +31,6 @@ def make_gaussian_fg(A_EE_BB, alpha_EE_BB, lmax=512*3, l0=80, Nside=512, seed=No
     return map_fg
 
 def write_gaussian_config_file(component, map_Q, map_U, file_name):
-    print(file_name)
     if component == 'dust':
         fg_config = {}
         fg_config['dust_QUgaussian'] = {}
@@ -173,13 +172,11 @@ def make_fg_sims(params):
                         if rank==0:
                             sky_extrap_ref = sky.get_emission(freq*u.GHz)
                             ratio_fg =  sky_extrap_ref/fg_temp
-                            hp.write_map(f'{chnl}_{cmp}_{nmc_str}_ref.fits', sky_extrap_ref, overwrite=True)
                             ratio_fg[0,:] = 0
                         else:
                             ratio_fg = None
                         ratio_fg = comm.bcast(ratio_fg, root=0)
                         sky_extrap = fg_temp*ratio_fg
-                        hp.write_map(f'{chnl}_{cmp}_{nmc_str}.fits', sky_extrap, overwrite=True)
                     else:
                         sky_extrap = sky.get_emission(freq*u.GHz)
                     sky_extrap = sky_extrap.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(freq*u.GHz))
