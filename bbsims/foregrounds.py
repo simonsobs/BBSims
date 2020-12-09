@@ -146,6 +146,7 @@ def make_fg_sims(params):
                     write_gaussian_config_file(cmp, file_path_Q, file_path_U, fg_config_file_name)
                     fg_config_file = fg_config_file_name
             sky = pysm3.Sky(nside=nside, component_config=fg_config_file)
+            dict_ratio_fg = {}
             for nch, chnl in enumerate(ch_name):
                 freq = freqs[nch]
                 fwhm = beams[nch]
@@ -160,10 +161,11 @@ def make_fg_sims(params):
                             sky_extrap = sky.get_emission(bandpass_frequencies, weights)
                             ratio_fg =  sky_extrap/fg_temp
                             ratio_fg[0:] = 0
+                            dict_ratio_fg[chnl] = ratio_fg
                         else:
                             ratio_fg = None
-                        ratio_fg = comm.bcast(ratio_fg, root=0)
-                        sky_extrap = fg_temp*ratio_fg
+                        dict_ratio_fg = comm.bcast(dict_ratio_fg, root=0)
+                        sky_extrap = fg_temp*dict_ratio_fg[chnl]
                     else:
                         sky_extrap = sky.get_emission(bandpass_frequencies, weights)
                     sky_extrap = sky_extrap*bandpass_unit_conversion(bandpass_frequencies, weights, u.uK_CMB)
@@ -173,10 +175,11 @@ def make_fg_sims(params):
                             sky_extrap_ref = sky.get_emission(freq*u.GHz)
                             ratio_fg =  sky_extrap_ref/fg_temp
                             ratio_fg[0,:] = 0
+                            dict_ratio_fg[chnl] = ratio_fg
                         else:
                             ratio_fg = None
-                        ratio_fg = comm.bcast(ratio_fg, root=0)
-                        sky_extrap = fg_temp*ratio_fg
+                        dict_ratio_fg = comm.bcast(dict_ratio_fg, root=0)
+                        sky_extrap = fg_temp*dict_ratio_fg[chnl]
                     else:
                         sky_extrap = sky.get_emission(freq*u.GHz)
                     sky_extrap = sky_extrap.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(freq*u.GHz))
