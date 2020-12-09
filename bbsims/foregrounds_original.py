@@ -156,32 +156,10 @@ def make_fg_sims(params):
                         f'datautils/bandpasses/band_{chnl}.txt')
                     bandpass_frequencies, weights = np.loadtxt(band_file_name, unpack=True)
                     bandpass_frequencies = bandpass_frequencies * u.GHz
-                    if gaussian_fg:
-                        if rank==0:
-                            sky_extrap = sky.get_emission(bandpass_frequencies, weights)
-                            ratio_fg =  sky_extrap/fg_temp
-                            ratio_fg[0:] = 0
-                        else:
-                            ratio_fg = None
-                        ratio_fg = comm.bcast(ratio_fg, root=0)
-                        sky_extrap = fg_temp*ratio_fg
-                    else:
-                        sky_extrap = sky.get_emission(bandpass_frequencies, weights)
+                    sky_extrap = sky.get_emission(bandpass_frequencies, weights)
                     sky_extrap = sky_extrap*bandpass_unit_conversion(bandpass_frequencies, weights, u.uK_CMB)
                 else:
-                    if gaussian_fg:
-                        if rank==0:
-                            sky_extrap_ref = sky.get_emission(freq*u.GHz)
-                            ratio_fg =  sky_extrap_ref/fg_temp
-                            hp.write_map(f'{chnl}_{cmp}_{nmc_str}_ref.fits', sky_extrap_ref, overwrite=True)
-                            ratio_fg[0,:] = 0
-                        else:
-                            ratio_fg = None
-                        ratio_fg = comm.bcast(ratio_fg, root=0)
-                        sky_extrap = fg_temp*ratio_fg
-                        hp.write_map(f'{chnl}_{cmp}_{nmc_str}.fits', sky_extrap, overwrite=True)
-                    else:
-                        sky_extrap = sky.get_emission(freq*u.GHz)
+                    sky_extrap = sky.get_emission(freq*u.GHz)
                     sky_extrap = sky_extrap.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(freq*u.GHz))
                 if not gaussian_fg:
                     sky_extrap = pysm3.apply_smoothing_and_coord_transform(sky_extrap, rot=hp.Rotator(coord=("G", "C")))
