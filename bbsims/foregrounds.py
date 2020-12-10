@@ -98,8 +98,11 @@ def make_fg_sims(params):
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
-    if not os.path.exists(out_dir) and rank==0:
-        os.makedirs(out_dir)
+    if rank==0:
+        try:
+            os.makedirs(out_dir)
+        except FileExistsError:
+            print('...', rank)
     if gaussian_fg and nmc_fg:
         nmc_fg = math.ceil(nmc_fg/size)*size
         if nmc_fg!=params.nmc_fg:
@@ -108,8 +111,11 @@ def make_fg_sims(params):
     else:
         perrank = 1
     for ncp, cmp in enumerate(components):
-        if not os.path.exists(out_dir+cmp) and rank==0:
-            os.makedirs(out_dir+cmp)
+        if rank==0:
+            try: 
+                os.makedirs(out_dir+cmp)
+            except FileExistsError:
+                print('...', rank)
         write_dir = out_dir+cmp+'/'
         fg_config_file_name = fg_models[cmp]
         if ('so' in fg_config_file_name) or ('pysm' in fg_config_file_name):
@@ -117,7 +123,8 @@ def make_fg_sims(params):
                 os.path.dirname(__file__), 'fg_models/')
             fg_config_file = f'{fg_config_file_path}/{fg_config_file_name}'
         else:
-            fg_config_file = f'{fg_config_file_name}'
+            fg_config_file = f'{fg_config_file_name}'    
+        dict_ratio_fg = {}
         for nmc in range(rank*perrank, (rank+1)*perrank):
             if gaussian_fg:
                 nmc_str = str(nmc).zfill(4)
@@ -146,7 +153,6 @@ def make_fg_sims(params):
                     write_gaussian_config_file(cmp, file_path_Q, file_path_U, fg_config_file_name)
                     fg_config_file = fg_config_file_name
             sky = pysm3.Sky(nside=nside, component_config=fg_config_file)
-            dict_ratio_fg = {}
             for nch, chnl in enumerate(ch_name):
                 freq = freqs[nch]
                 fwhm = beams[nch]
@@ -160,8 +166,8 @@ def make_fg_sims(params):
                         if rank==0:
                             sky_extrap = sky.get_emission(bandpass_frequencies, weights)
                             ratio_fg =  sky_extrap/fg_temp
-                            ratio_fg[0:] = 0
-                            dict_ratio_fg[chnl] = ratio_fg
+                            ratio_fg[0, :] = 0
+                            dict_ratio_fg[chnl] = np.mean(ratio_fg[1,:])
                         else:
                             ratio_fg = None
                         dict_ratio_fg = comm.bcast(dict_ratio_fg, root=0)
@@ -175,7 +181,7 @@ def make_fg_sims(params):
                             sky_extrap_ref = sky.get_emission(freq*u.GHz)
                             ratio_fg =  sky_extrap_ref/fg_temp
                             ratio_fg[0,:] = 0
-                            dict_ratio_fg[chnl] = ratio_fg
+                            dict_ratio_fg[chnl] = np.mean(ratio_fg[1, :])
                         else:
                             ratio_fg = None
                         dict_ratio_fg = comm.bcast(dict_ratio_fg, root=0)
