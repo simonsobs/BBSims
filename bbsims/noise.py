@@ -44,12 +44,12 @@ def make_noise_sims(params):
         print_rnk0(f'WARNING: setting nmc_noise = {nmc_noise}', rank)
     perrank = nmc_noise//size
     chnl_seed = 12
-    if (use_hits==True) or (f_sky==False):
-        hits_file = os.path.join(
-            os.path.dirname(__file__),
-            'datautils/apodized_SAThits_SOpaper2018_nside1024.fits')
-        hits_map = hp.read_map(hits_file)
-        hits_map = hp.ud_grade(hits_map, nside)
+    hits_file = os.path.join(
+        os.path.dirname(__file__),
+        'datautils/apodized_SAThits_SOpaper2018_nside1024.fits')
+    hits_map = hp.read_map(hits_file)
+    hits_map = hp.ud_grade(hits_map, nside)
+    if f_sky==False:
         f_sky = np.mean(hits_map)
     if not use_hits:
         hits_map_sort = np.copy(hits_map)
@@ -61,7 +61,7 @@ def make_noise_sims(params):
         mask_binary[hits_map<min_hits] = 0
         mask_binary[hits_map>=min_hits] = 1
         f_sky = np.mean(mask_binary)
-    ell, n_ell = sonc.Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f,2,f_sky,nside*3,1)
+    ell, n_ell = sonc.Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f,5,f_sky,nside*3,1)
     for nch, chnl in enumerate(ch_name):
             if rank==0:
                 np.savez(f'{out_dir}/{chnl}_ell_n_ell_FULL_{file_str}.npz', ell=ell, n_ell=n_ell[nch])
