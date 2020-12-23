@@ -61,7 +61,7 @@ def make_noise_sims(params):
         mask_binary[hits_map<min_hits] = 0
         mask_binary[hits_map>=min_hits] = 1
         f_sky = np.mean(mask_binary)
-    ell, n_ell = sonc.Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f,5,f_sky,nside*3,1)
+    ell, n_ell = sonc.Simons_Observatory_V3_SA_noise(sensitivity_mode,one_over_f,1,f_sky,nside*3,1)
     for nch, chnl in enumerate(ch_name):
             if rank==0:
                 np.savez(f'{out_dir}/{chnl}_ell_n_ell_FULL_{file_str}.npz', ell=ell, n_ell=n_ell[nch])
